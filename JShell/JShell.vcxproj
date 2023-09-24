@@ -182,6 +182,7 @@
     <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\type_caster_pyobject_ptr.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="JavaAPI.hpp" />
+    <ClInclude Include="JNICache.hpp" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Pipeline.hpp" />
   </ItemGroup>

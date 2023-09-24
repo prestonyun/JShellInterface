@@ -120,6 +120,9 @@
     <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\type_caster_pyobject_ptr.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="JNICache.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

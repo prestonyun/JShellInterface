@@ -4,36 +4,11 @@
 #include <sstream>
 #include <jni.h>
 #include <vector>
+#include <unordered_map>
+#include "JNICache.hpp"
 
 typedef int (*ptr_GCJavaVMs)(JavaVM** vmBuf, jsize bufLen, jsize* nVMs);
 typedef jobject(JNICALL* ptr_GetComponent)(JNIEnv* env, void* platformInfo);
-
-enum ReturnType {
-    VOID_TYPE = 'V',
-    BOOLEAN_TYPE = 'Z',
-    INT_TYPE = 'I',
-    OBJECT_TYPE = 'L',
-    LONG_TYPE = 'J',
-    STRING_TYPE = 'S',
-    JSTRING_TYPE = 's',
-    ERROR_TYPE = -1,
-    EXCEPTION_TYPE = -2,
-    // Add other types as needed
-};
-
-struct JavaReturnValue {
-    union {
-        jobject objectValue;
-        jboolean booleanValue;
-        jint intValue;
-        jdouble doubleValue;
-        jlong longValue;
-        jstring jStringValue;
-        // Add other JNI types as needed
-    };
-    ReturnType type; // A enum value indicating the type of the value
-    std::string statement = "";
-};
 
 struct AWTRectangle
 {
@@ -55,6 +30,8 @@ public:
     jobject getClient();
     jobject getJShell();
 
+    // Initialize cache in JavaAPI constructor
+    JniCache* cache;
 
 private:
     JavaVM* jvm;
@@ -67,5 +44,4 @@ private:
     jobject shell;
     jmethodID eval;
     HWND clientHWND;
-
 };

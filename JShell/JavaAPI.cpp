@@ -43,6 +43,7 @@ JavaAPI::JavaAPI() {
     shell = nullptr;
     eval = nullptr;
     clientHWND = nullptr;
+    cache = new JniCache();
 
     jsize nVMs;
     jint ret = JNI_GetCreatedJavaVMs(&jvm, 1, &nVMs);
@@ -381,13 +382,13 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
             return result;
         }
         checkAndClearException(env);
-        jclass listClass = env->GetObjectClass(snippetList);
+        jclass listClass = this->cache->getClass(env, "SnippetList", snippetList);//env->GetObjectClass(snippetList);
         if (listClass == nullptr) {
             DisplayErrorMessage(L"Failed to get list class");
             return result;
         }
         checkAndClearException(env);
-        jmethodID sizeMethod = env->GetMethodID(listClass, "size", "()I");
+        jmethodID sizeMethod = this->cache->getMethodID(env, "SnippetList", snippetList, "size", "()I");
         if (sizeMethod == nullptr) {
             DisplayErrorMessage(L"Failed to get size method");
             return result;
@@ -399,7 +400,7 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
             return result;
         }
         checkAndClearException(env);
-        jmethodID getMethod = env->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
+        jmethodID getMethod = this->cache->getMethodID(env, "SnippetList", listClass, "get", "(I)Ljava/lang/Object;");
         if (getMethod == nullptr) {
             DisplayErrorMessage(L"Failed to get get method");
             return result;
@@ -408,8 +409,8 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
         std::string resultString = "";
         for (jint i = 0; i < listSize; i++) {
             jobject snippet = env->CallObjectMethod(snippetList, getMethod, i);
-            jclass snippetClass = env->GetObjectClass(snippet);
-            jmethodID valueMethod = env->GetMethodID(snippetClass, "value", "()Ljava/lang/String;");
+            jclass snippetClass = this->cache->getClass(env, "Snippet", snippet);
+            jmethodID valueMethod = this->cache->getMethodID(env, "ValueMethod", snippetClass, "value", "()Ljava/lang/String;");
             jstring valueString = (jstring)env->CallObjectMethod(snippet, valueMethod);
             if (valueString == nullptr) {
                 jmethodID exception = env->GetMethodID(snippetClass, "exception", "()Ljdk/jshell/JShellException;");
@@ -425,6 +426,7 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
                 else {
                     jclass exceptionClass = env->GetObjectClass(exceptionObject);
                     jmethodID getMessage = env->GetMethodID(exceptionClass, "getMessage", "()Ljava/lang/String;");
+
                     jstring message = (jstring)env->CallObjectMethod(exceptionObject, getMessage);
                     if (message == nullptr) {
                         break;
