@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{49198918-c3a4-4571-b393-bb7e5cd07ab9}</ProjectGuid>
+    <RootNamespace>JShell</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>E:\SynapseScapeRelease\.conda\include;E:\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>E:\SynapseScapeRelease\.conda\include;E:\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;JSHELL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;JSHELL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;JSHELL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\Program Files\AdoptOpenJDK\jdk-11.0.8.10-hotspot\include\win32;C:\Program Files\AdoptOpenJDK\jdk-11.0.8.10-hotspot\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>C:\Program Files\AdoptOpenJDK\jdk-11.0.8.10-hotspot\lib\jvm.lib;E:\SynapseScapeRelease\.conda\libs\python310.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;JSHELL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\Program Files\AdoptOpenJDK\jdk-11.0.8.10-hotspot\include\win32;C:\Program Files\AdoptOpenJDK\jdk-11.0.8.10-hotspot\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>C:\Program Files\AdoptOpenJDK\jdk-11.0.8.10-hotspot\lib\jvm.lib;E:\SynapseScapeRelease\.conda\libs\python310.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\attr.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\buffer_info.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\cast.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\chrono.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\common.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\complex.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\class.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\common.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\descr.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\init.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\internals.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\typeid.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\type_caster_base.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\eigen.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\eigen\common.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\eigen\matrix.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\eigen\tensor.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\embed.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\eval.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\functional.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\gil.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\iostream.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\numpy.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\operators.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\options.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\pybind11.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\pytypes.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\stl.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\stl\filesystem.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\stl_bind.h" />
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\type_caster_pyobject_ptr.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="JavaAPI.hpp" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Pipeline.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="JavaAPI.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Pipeline.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pipeline.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaAPI.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\attr.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\buffer_info.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\cast.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\chrono.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\common.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\complex.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\class.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\common.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\descr.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\init.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\internals.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\typeid.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\detail\type_caster_base.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\eigen\common.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\eigen\matrix.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\eigen\tensor.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\eigen.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\embed.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\eval.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\functional.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\gil.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\iostream.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\numpy.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\operators.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\options.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\pybind11.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\pytypes.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\stl\filesystem.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\stl.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\stl_bind.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SynapseScapeRelease\.conda\Lib\site-packages\pybind11\include\pybind11\type_caster_pyobject_ptr.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaAPI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
