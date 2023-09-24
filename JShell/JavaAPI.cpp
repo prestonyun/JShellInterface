@@ -365,8 +365,6 @@ jobject JavaAPI::GrabCanvas() {
     return nullptr;
 }
 
-
-
 std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
     std::string result = "";
     if (!this->env) {
@@ -376,82 +374,71 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
         getJShell();
     }
     if (this->shell) {
-        std::istringstream iss(instruction);
-        std::string token;
-        std::vector<std::string> tokens;
-        // Extract the rest of the string as code snippets separated by semicolons
-        while (std::getline(iss, token, ';')) {
-            token += ";";
-            tokens.push_back(token);
+        jstring jString = env->NewStringUTF(instruction.c_str());
+        jobject snippetList = env->CallObjectMethod(shell, eval, jString);
+        if (snippetList == nullptr) {
+            DisplayErrorMessage(L"Failed to get snippet list");
+            return result;
         }
-
+        checkAndClearException(env);
+        jclass listClass = env->GetObjectClass(snippetList);
+        if (listClass == nullptr) {
+            DisplayErrorMessage(L"Failed to get list class");
+            return result;
+        }
+        checkAndClearException(env);
+        jmethodID sizeMethod = env->GetMethodID(listClass, "size", "()I");
+        if (sizeMethod == nullptr) {
+            DisplayErrorMessage(L"Failed to get size method");
+            return result;
+        }
+        checkAndClearException(env);
+        jint listSize = env->CallIntMethod(snippetList, sizeMethod);
+        if (listSize == 0) {
+            DisplayErrorMessage(L"List size is 0");
+            return result;
+        }
+        checkAndClearException(env);
+        jmethodID getMethod = env->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
+        if (getMethod == nullptr) {
+            DisplayErrorMessage(L"Failed to get get method");
+            return result;
+        }
+        checkAndClearException(env);
         std::string resultString = "";
-        for (const auto& x : tokens) {
-            jstring jString = env->NewStringUTF(x.c_str());
-            jobject snippetList = env->CallObjectMethod(shell, eval, jString);
-            if (snippetList == nullptr) {
-                DisplayErrorMessage(L"Failed to get snippet list");
-                return result;
+        for (jint i = 0; i < listSize; i++) {
+            jobject snippet = env->CallObjectMethod(snippetList, getMethod, i);
+            jclass snippetClass = env->GetObjectClass(snippet);
+            jmethodID valueMethod = env->GetMethodID(snippetClass, "value", "()Ljava/lang/String;");
+            jstring valueString = (jstring)env->CallObjectMethod(snippet, valueMethod);
+            if (valueString == nullptr) {
+                jmethodID exception = env->GetMethodID(snippetClass, "exception", "()Ljdk/jshell/JShellException;");
+                jobject exceptionObject = env->CallObjectMethod(snippet, exception);
+                if (exceptionObject == nullptr) {
+                    jmethodID toString = env->GetMethodID(snippetClass, "toString", "()Ljava/lang/String;");
+                    jstring toStringString = (jstring)env->CallObjectMethod(snippet, toString);
+                    if (toStringString != nullptr) {
+                        resultString += (std::string)env->GetStringUTFChars(toStringString, NULL);
+                        continue;
+                    }
+                }
+                else {
+                    jclass exceptionClass = env->GetObjectClass(exceptionObject);
+                    jmethodID getMessage = env->GetMethodID(exceptionClass, "getMessage", "()Ljava/lang/String;");
+                    jstring message = (jstring)env->CallObjectMethod(exceptionObject, getMessage);
+                    if (message == nullptr) {
+                        break;
+                    }
+                    checkAndClearException(env);
+                    const char* utf8Chars = env->GetStringUTFChars(message, NULL);
+                    resultString += (std::string)utf8Chars;
+                    break;
+                }
             }
             checkAndClearException(env);
-            jclass listClass = env->GetObjectClass(snippetList);
-            if (listClass == nullptr) {
-                DisplayErrorMessage(L"Failed to get list class");
-                return result;
-            }
-            checkAndClearException(env);
-            jmethodID sizeMethod = env->GetMethodID(listClass, "size", "()I");
-            if (sizeMethod == nullptr) {
-                DisplayErrorMessage(L"Failed to get size method");
-                return result;
-            }
-            checkAndClearException(env);
-            jint listSize = env->CallIntMethod(snippetList, sizeMethod);
-            if (listSize == 0) {
-                DisplayErrorMessage(L"List size is 0");
-                return result;
-            }
-            checkAndClearException(env);
-            jmethodID getMethod = env->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
-            if (getMethod == nullptr) {
-                DisplayErrorMessage(L"Failed to get get method");
-                return result;
-            }
-            checkAndClearException(env);
-            for (jint i = 0; i < listSize; i++) {
-                jobject snippet = env->CallObjectMethod(snippetList, getMethod, i);
-                jclass snippetClass = env->GetObjectClass(snippet);
-                jmethodID valueMethod = env->GetMethodID(snippetClass, "value", "()Ljava/lang/String;");
-                jstring valueString = (jstring)env->CallObjectMethod(snippet, valueMethod);
-                if (valueString == nullptr) {
-                    jmethodID exception = env->GetMethodID(snippetClass, "exception", "()Ljdk/jshell/JShellException;");
-                    jobject exceptionObject = env->CallObjectMethod(snippet, exception);
-                    if (exceptionObject == nullptr) {
-						jmethodID toString = env->GetMethodID(snippetClass, "toString", "()Ljava/lang/String;");
-                        jstring toStringString = (jstring)env->CallObjectMethod(snippet, toString);
-                        if (toStringString != nullptr) {
-                            resultString += (std::string)env->GetStringUTFChars(toStringString, NULL);
-                            continue;
-						}
-					}
-                    else {
-						jclass exceptionClass = env->GetObjectClass(exceptionObject);
-						jmethodID getMessage = env->GetMethodID(exceptionClass, "getMessage", "()Ljava/lang/String;");
-						jstring message = (jstring)env->CallObjectMethod(exceptionObject, getMessage);
-                        if (message == nullptr) {
-							break;
-						}
-						checkAndClearException(env);
-						const char* utf8Chars = env->GetStringUTFChars(message, NULL);
-						resultString += (std::string)utf8Chars;
-						break;
-					}
-				}
-                checkAndClearException(env);
 
-                const char* utf8Chars = env->GetStringUTFChars(valueString, NULL);
-                resultString += (std::string)utf8Chars;
-            }
+            const char* utf8Chars = env->GetStringUTFChars(valueString, NULL);
+            resultString += (std::string)utf8Chars;
         }
 
         return resultString;
@@ -461,6 +448,7 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
         return result;
     }
 }
+
 std::string JavaAPI::getComponentBounds(JNIEnv* env, jobject component)
 {
     // Get the component's class
