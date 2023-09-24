@@ -8,7 +8,7 @@
 class JniCache {
 public:
     // Cache for method IDs, using className::methodName as the key.
-    std::unordered_map<std::string, jmethodID> methodIDCache;
+    std::unordered_map<std::string, jmethodID> methodCache;
     // Cache for class objects, using className as the key.
     std::unordered_map<std::string, jclass> classCache;
 
@@ -25,16 +25,19 @@ public:
     }
 
     // Method to get a method ID from the cache, or find and add it to the cache.
-    jmethodID getMethodID(JNIEnv* env, const std::string& className, jobject object, const std::string& name, const std::string& signature) {
-        std::string key = className + "::" + name;
-        auto it = methodIDCache.find(key);
-        if (it != methodIDCache.end()) {
+    jmethodID getMethodID(JNIEnv* env, const std::string& key, jclass clazz, const char* name, const char* sig) {
+        auto it = methodCache.find(key);
+        if (it != methodCache.end()) {
             return it->second;
         }
 
-        jclass cls = getClass(env, className, object);
-        jmethodID methodID = env->GetMethodID(cls, name.c_str(), signature.c_str());
-        methodIDCache[key] = methodID;
+        jmethodID methodID = env->GetMethodID(clazz, name, sig);
+        if (env->ExceptionCheck()) {
+            env->ExceptionClear();
+            return nullptr;
+        }
+
+        methodCache[key] = methodID;
         return methodID;
     }
 

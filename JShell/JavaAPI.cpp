@@ -388,7 +388,7 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
             return result;
         }
         checkAndClearException(env);
-        jmethodID sizeMethod = this->cache->getMethodID(env, "SnippetList", snippetList, "size", "()I");
+        jmethodID sizeMethod = this->cache->getMethodID(env, "SnippetList_size", listClass, "size", "()I");
         if (sizeMethod == nullptr) {
             DisplayErrorMessage(L"Failed to get size method");
             return result;
@@ -400,7 +400,7 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
             return result;
         }
         checkAndClearException(env);
-        jmethodID getMethod = this->cache->getMethodID(env, "SnippetList", listClass, "get", "(I)Ljava/lang/Object;");
+        jmethodID getMethod = this->cache->getMethodID(env, "SnippetList_get", listClass, "get", "(I)Ljava/lang/Object;");
         if (getMethod == nullptr) {
             DisplayErrorMessage(L"Failed to get get method");
             return result;
