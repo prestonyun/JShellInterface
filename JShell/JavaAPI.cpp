@@ -196,7 +196,7 @@ jobject JavaAPI::getJShell() {
     {
         getClient();
     }
-    jmethodID switchContext = env->GetMethodID(shellPanelClass, "switchContext", "(Lcom/google/inject/Injector;)V");
+    jmethodID switchContext = this->cache->getMethodID(env, "ShellPanelClass", shellPanelClass, "switchContext", "(Lcom/google/inject/Injector;)V");
     if (!switchContext) {
         DisplayErrorMessage(L"Failed to find ShellPanel class");
         return nullptr;
@@ -237,7 +237,7 @@ jobject JavaAPI::getClient() {
         return nullptr; // or handle the error as appropriate
     }
     this->injector = injector;
-    jclass injectorClass = env->GetObjectClass(injector);
+    jclass injectorClass = this->cache->getClass(env, "InjectorClass", injector);
     if (env->ExceptionCheck()) {
         MessageBoxW(NULL, L"Failed to find injector class", L"Error", MB_OK | MB_ICONERROR);
         env->ExceptionClear();
@@ -278,7 +278,7 @@ jobject JavaAPI::getClient() {
         return nullptr; // or handle the error as appropriate
     }
 
-    jclass clientClass = env->GetObjectClass(client);
+    jclass clientClass = this->cache->getClass(env, "ClientClass", client);
     if (env->ExceptionCheck()) {
         MessageBoxW(NULL, L"Failed to find client object class", L"Error", MB_OK | MB_ICONERROR);
         env->ExceptionClear();
