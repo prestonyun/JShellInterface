@@ -413,10 +413,10 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
             jmethodID valueMethod = this->cache->getMethodID(env, "ValueMethod", snippetClass, "value", "()Ljava/lang/String;");
             jstring valueString = (jstring)env->CallObjectMethod(snippet, valueMethod);
             if (valueString == nullptr) {
-                jmethodID exception = env->GetMethodID(snippetClass, "exception", "()Ljdk/jshell/JShellException;");
+                jmethodID exception = this->cache->getMethodID(env, "SnippetException", snippetClass, "exception", "()Ljdk/jshell/JShellException;");
                 jobject exceptionObject = env->CallObjectMethod(snippet, exception);
                 if (exceptionObject == nullptr) {
-                    jmethodID toString = env->GetMethodID(snippetClass, "toString", "()Ljava/lang/String;");
+                    jmethodID toString = this->cache->getMethodID(env, "SnippetToString", snippetClass, "toString", "()Ljava/lang/String;");
                     jstring toStringString = (jstring)env->CallObjectMethod(snippet, toString);
                     if (toStringString != nullptr) {
                         resultString += (std::string)env->GetStringUTFChars(toStringString, NULL);
@@ -424,8 +424,8 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
                     }
                 }
                 else {
-                    jclass exceptionClass = env->GetObjectClass(exceptionObject);
-                    jmethodID getMessage = env->GetMethodID(exceptionClass, "getMessage", "()Ljava/lang/String;");
+                    jclass exceptionClass = this->cache->getClass(env, "ExceptionClass", exceptionObject);
+                    jmethodID getMessage = this->cache->getMethodID(env, "ExceptionGetMethod", exceptionClass, "getMessage", "()Ljava/lang/String;");
 
                     jstring message = (jstring)env->CallObjectMethod(exceptionObject, getMessage);
                     if (message == nullptr) {

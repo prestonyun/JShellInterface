@@ -11,6 +11,8 @@ public:
     std::unordered_map<std::string, jmethodID> methodCache;
     // Cache for class objects, using className as the key.
     std::unordered_map<std::string, jclass> classCache;
+    std::unordered_map<std::string, jobject> objectCache;
+    std::unordered_map<std::string, jfieldID> fieldCache;
 
     // Method to get a class object from the cache, or find and add it to the cache.
     jclass getClass(JNIEnv* env, const std::string& name, jobject object) {
@@ -40,6 +42,40 @@ public:
         methodCache[key] = methodID;
         return methodID;
     }
+
+    // Method to get a jobject from the cache, or find and add it to the cache.
+    jobject getObject(JNIEnv* env, const std::string& key, jclass clazz, const char* name, const char* sig) {
+		auto it = objectCache.find(key);
+        if (it != objectCache.end()) {
+			return it->second;
+		}
+
+		jobject object = env->GetStaticObjectField(clazz, env->GetStaticFieldID(clazz, name, sig));
+        if (env->ExceptionCheck()) {
+			env->ExceptionClear();
+			return nullptr;
+		}
+
+		objectCache[key] = object;
+		return object;
+	}
+
+    // Method to get a jfieldID from the cache, or find and add it to the cache.
+    jfieldID getFieldID(JNIEnv* env, const std::string& key, jclass clazz, const char* name, const char* sig) {
+		auto it = fieldCache.find(key);
+        if (it != fieldCache.end()) {
+			return it->second;
+		}
+
+		jfieldID fieldID = env->GetFieldID(clazz, name, sig);
+        if (env->ExceptionCheck()) {
+			env->ExceptionClear();
+			return nullptr;
+		}
+
+		fieldCache[key] = fieldID;
+		return fieldID;
+	}
 
     // Constructor, can be used to preload some classes into the cache.
     JniCache() = default;
