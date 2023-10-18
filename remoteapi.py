@@ -125,9 +125,12 @@ class RemoteAPI:
                 print(f"Error writing to pipe: {e}")
                 return False
 
+    import time
+
     def read_from_pipe(self, buffer_size=32768) -> str:
         with self.lock:
             try:
+                time.sleep(0.1)  # wait for 100ms
                 result, data = win32file.ReadFile(self.handle, buffer_size)
                 return data.decode(self.encoding)
             except Exception as e:

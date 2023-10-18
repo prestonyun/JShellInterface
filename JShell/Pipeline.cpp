@@ -65,6 +65,7 @@ bool Pipeline::WriteResponse(const std::string& response) {
         std::cout << "Failed to write to pipe" << std::endl;
         return false;
     }
+    FlushFileBuffers(hPipe);  // flush the pipe
     return true;
 }
 
