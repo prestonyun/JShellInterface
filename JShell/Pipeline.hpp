@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
+#include <mutex>
 #include "JavaAPI.hpp"
 
 class Pipeline {
@@ -10,6 +11,7 @@ public:
     ~Pipeline();
     void StartServer();
     static DWORD WINAPI RunServer(LPVOID lpParam);
+    static DWORD WINAPI ClientThread(LPVOID lpParam);
     bool ReadFromPipe(std::vector<char>& buffer, DWORD& bytesRead);
     bool WriteResponse(const std::string& response);
     void DisconnectAndClose();
@@ -19,4 +21,6 @@ private:
     std::wstring pipeName;
     size_t bufferSize;
     JavaAPI javaAPI;
+    std::mutex mtx; // Mutex for thread-safety
+    bool running;
 };
