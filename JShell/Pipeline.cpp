@@ -78,12 +78,73 @@ void Pipeline::DisconnectAndClose() {
     }
 }
 
+bool Pipeline::ReadFromPipeWithTimeout(std::vector<char>& buffer, DWORD& bytesRead, DWORD timeoutMillis) {
+    std::lock_guard<std::mutex> lock(mtx);
+    buffer.resize(bufferSize);
+
+    DWORD startTime = GetTickCount64();
+    DWORD elapsedTime = 0;
+
+    while (elapsedTime < timeoutMillis) {
+        DWORD bytesAvailable = 0;
+        if (!::PeekNamedPipe(hPipe, NULL, 0, NULL, &bytesAvailable, NULL)) {
+            DWORD error = GetLastError();
+            std::wcerr << L"Failed to peek named pipe. Error Code: " << error << std::endl;
+            Sleep(1000);  // wait for a second before retrying
+            continue;
+        }
+
+        if (bytesAvailable > 0) {
+            if (!::ReadFile(hPipe, buffer.data(), static_cast<DWORD>(buffer.size() - 1), &bytesRead, NULL)) {
+                DWORD error = GetLastError();
+                std::wcerr << L"Failed to read from pipe. Error Code: " << error << std::endl;
+                Sleep(1000);  // wait for a second before retrying
+                continue;
+            }
+
+            buffer[bytesRead] = '\0'; // safe null-termination
+            return true;
+        }
+
+        // If data isn't ready yet, wait for a short interval and check again
+        Sleep(50);
+        elapsedTime = GetTickCount64() - startTime;
+    }
+
+    std::wcerr << L"Timeout: Failed to read from pipe within the specified timeout." << std::endl;
+    Sleep(1000);  // wait for a second before retrying
+    return false;
+}
+
+
 DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
     Pipeline* pipeline = static_cast<Pipeline*>(lpParam);
     JavaAPI javaAPI;
     std::vector<char> buffer;
     DWORD bytesRead;
+    int handshakeRetries = 3;
 
+    while (handshakeRetries > 0) {
+        if (pipeline->ReadFromPipeWithTimeout(buffer, bytesRead, 1000 /*timeout in ms*/)) {
+            buffer[bytesRead] = '\0';
+            std::string handshakeMessage(buffer.data());
+            if (handshakeMessage == "READY") {
+                std::cout << "Received handshake request." << std::endl;
+                pipeline->WriteResponse("GO_AHEAD");
+                std::cout << "Sent handshake acknowledgment." << std::endl;
+                break; // break out of handshake loop
+            }
+        }
+        handshakeRetries--;
+    }
+
+    if (handshakeRetries <= 0) {
+        std::cerr << "Failed to establish handshake after 3 retries." << std::endl;
+        DisconnectNamedPipe(pipeline->hPipe);
+        return 1; // Error code
+    }
+
+    // Now, continue reading instructions from the client until the client disconnects or an error occurs
     while (pipeline->running) {
         if (pipeline->ReadFromPipe(buffer, bytesRead)) {
             buffer[bytesRead] = '\0';
@@ -93,8 +154,13 @@ DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
             std::cout << "Sending response: " << response << std::endl;
             pipeline->WriteResponse(response);
         }
+        else {
+            // Possibly handle errors or disconnections here.
+            break;  // break out if reading from the pipe fails, which implies client has disconnected.
+        }
     }
-    DisconnectNamedPipe(pipeline->hPipe);
+
+    DisconnectNamedPipe(pipeline->hPipe);  // only disconnect once we're done with this client
     return 0;
 }
 
@@ -102,28 +168,28 @@ DWORD WINAPI Pipeline::RunServer(LPVOID lpParam) {
     Pipeline* pipeline = static_cast<Pipeline*>(lpParam);
     pipeline->StartServer();
 
+    // Main server loop. Wait for a connection, handle it, then wait for the next one.
     while (pipeline->running) {
+        std::cout << "Waiting for a connection..." << std::endl;
         BOOL connected = ConnectNamedPipe(pipeline->hPipe, NULL);
         if (!connected) {
             if (GetLastError() == ERROR_PIPE_CONNECTED) {
                 connected = TRUE;
             }
-            else if (GetLastError() == ERROR_PIPE_BUSY) {
-                if (WaitNamedPipeW(pipeline->pipeName.c_str(), 3000 /* 3 seconds */)) {
-                    continue;
-                }
-            }
             else {
-                pipeline->DisconnectAndClose(); // Close the current pipe handle
-                pipeline->StartServer(); // Recreate the pipe
-                continue; // Try to connect again
+                pipeline->DisconnectAndClose();  // Close the current pipe handle
+                pipeline->StartServer();        // Recreate the pipe
+                continue;                       // Try to connect again
             }
         }
 
         if (connected) {
+            std::cout << "Attempting handshake..." << std::endl;
             // Create a new thread to handle the client's requests.
             HANDLE hThread = CreateThread(NULL, 0, ClientThread, pipeline, 0, NULL);
             if (hThread) {
+                // Wait for the client thread to finish. This ensures we handle one client at a time.
+                WaitForSingleObject(hThread, INFINITE);
                 CloseHandle(hThread);
             }
         }
@@ -131,5 +197,6 @@ DWORD WINAPI Pipeline::RunServer(LPVOID lpParam) {
 
     return 0;
 }
+
 
 

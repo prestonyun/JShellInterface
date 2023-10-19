@@ -12,6 +12,7 @@ public:
     void StartServer();
     static DWORD WINAPI RunServer(LPVOID lpParam);
     static DWORD WINAPI ClientThread(LPVOID lpParam);
+    bool ReadFromPipeWithTimeout(std::vector<char>& buffer, DWORD& bytesRead, DWORD timeoutMillis);
     bool ReadFromPipe(std::vector<char>& buffer, DWORD& bytesRead);
     bool WriteResponse(const std::string& response);
     void DisconnectAndClose();
