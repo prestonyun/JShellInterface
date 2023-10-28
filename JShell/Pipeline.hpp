@@ -21,7 +21,7 @@ private:
     HANDLE hPipe;
     std::wstring pipeName;
     size_t bufferSize;
-    JavaAPI javaAPI;
+    static JavaAPI javaAPI;
     std::mutex mtx; // Mutex for thread-safety
     bool running;
 };

@@ -7,7 +7,7 @@
 HANDLE serverThread = NULL;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
-    static Pipeline pipeline(L"\\\\.\\pipe\\jshellpipe", 32768); // Static initialization will persist
+    static Pipeline pipeline(L"\\\\.\\pipe\\jshellpipe", 65535); // Static initialization will persist
 
     switch (ul_reason_for_call) {
     case DLL_PROCESS_ATTACH:

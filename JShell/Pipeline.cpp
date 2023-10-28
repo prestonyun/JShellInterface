@@ -4,7 +4,11 @@
 #include <iostream>
 
 Pipeline::Pipeline(const std::wstring& pipeName, size_t bufferSize)
-    : pipeName(pipeName), bufferSize(bufferSize), hPipe(INVALID_HANDLE_VALUE) {}
+    : pipeName(pipeName), bufferSize(bufferSize), hPipe(INVALID_HANDLE_VALUE) {
+	running = false;
+}
+
+JavaAPI Pipeline::javaAPI;
 
 Pipeline::~Pipeline() {
     DisconnectAndClose();
@@ -82,23 +86,23 @@ bool Pipeline::ReadFromPipeWithTimeout(std::vector<char>& buffer, DWORD& bytesRe
     std::lock_guard<std::mutex> lock(mtx);
     buffer.resize(bufferSize);
 
-    DWORD startTime = GetTickCount64();
-    DWORD elapsedTime = 0;
+    ULONGLONG startTime = GetTickCount64();
+    ULONGLONG elapsedTime = 0;
 
     while (elapsedTime < timeoutMillis) {
         DWORD bytesAvailable = 0;
         if (!::PeekNamedPipe(hPipe, NULL, 0, NULL, &bytesAvailable, NULL)) {
             DWORD error = GetLastError();
             std::wcerr << L"Failed to peek named pipe. Error Code: " << error << std::endl;
-            Sleep(1000);  // wait for a second before retrying
+            Sleep(10);  // wait for a second before retrying
             continue;
         }
 
         if (bytesAvailable > 0) {
             if (!::ReadFile(hPipe, buffer.data(), static_cast<DWORD>(buffer.size() - 1), &bytesRead, NULL)) {
                 DWORD error = GetLastError();
-                std::wcerr << L"Failed to read from pipe. Error Code: " << error << std::endl;
-                Sleep(1000);  // wait for a second before retrying
+                std::wcerr << L"Failed to read from timeout pipe. Error Code: " << error << std::endl;
+                Sleep(10);  // wait for a second before retrying
                 continue;
             }
 
@@ -107,12 +111,12 @@ bool Pipeline::ReadFromPipeWithTimeout(std::vector<char>& buffer, DWORD& bytesRe
         }
 
         // If data isn't ready yet, wait for a short interval and check again
-        Sleep(50);
+        Sleep(10);
         elapsedTime = GetTickCount64() - startTime;
     }
 
     std::wcerr << L"Timeout: Failed to read from pipe within the specified timeout." << std::endl;
-    Sleep(1000);  // wait for a second before retrying
+    Sleep(10);  // wait for a second before retrying
     return false;
 }
 
@@ -130,7 +134,7 @@ DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
             std::string handshakeMessage(buffer.data());
             if (handshakeMessage == "READY") {
                 std::cout << "Received handshake request." << std::endl;
-                pipeline->WriteResponse("GO_AHEAD");
+                pipeline->WriteResponse("GO_AHEAD<END>");
                 std::cout << "Sent handshake acknowledgment." << std::endl;
                 break; // break out of handshake loop
             }
@@ -151,6 +155,9 @@ DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
             std::string instruction(buffer.data());
             std::cout << "Received instruction: " << instruction << std::endl;
             std::string response = javaAPI.ProcessInstruction(instruction);
+
+            response += "<END>";
+
             std::cout << "Sending response: " << response << std::endl;
             pipeline->WriteResponse(response);
         }
@@ -197,6 +204,3 @@ DWORD WINAPI Pipeline::RunServer(LPVOID lpParam) {
 
     return 0;
 }
-
-
-
