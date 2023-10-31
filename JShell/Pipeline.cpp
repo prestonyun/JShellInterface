@@ -144,13 +144,15 @@ DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
 
     if (handshakeRetries <= 0) {
         std::cerr << "Failed to establish handshake after 3 retries." << std::endl;
-        DisconnectNamedPipe(pipeline->hPipe);
+        //DisconnectNamedPipe(pipeline->hPipe);
+        pipeline->DisconnectAndClose();
         return 1; // Error code
     }
 
     // Now, continue reading instructions from the client until the client disconnects or an error occurs
     while (pipeline->running) {
-        if (pipeline->ReadFromPipe(buffer, bytesRead)) {
+        Sleep(10);
+        if (pipeline->ReadFromPipeWithTimeout(buffer, bytesRead, 1000)) {
             buffer[bytesRead] = '\0';
             std::string instruction(buffer.data());
             std::cout << "Received instruction: " << instruction << std::endl;
@@ -160,14 +162,16 @@ DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
 
             std::cout << "Sending response: " << response << std::endl;
             pipeline->WriteResponse(response);
+            
+            Sleep(10);
         }
         else {
             // Possibly handle errors or disconnections here.
             break;  // break out if reading from the pipe fails, which implies client has disconnected.
         }
     }
-
-    DisconnectNamedPipe(pipeline->hPipe);  // only disconnect once we're done with this client
+    pipeline->DisconnectAndClose();
+    //DisconnectNamedPipe(pipeline->hPipe);  // only disconnect once we're done with this client
     return 0;
 }
 

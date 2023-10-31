@@ -24,7 +24,6 @@ public:
     HWND FindWindowWithClassName(const std::vector<HWND>& windows, const wchar_t* className);
     HWND FindWindowWithTitle(const std::vector<HWND>& windows, const wchar_t* windowTitle);
     HWND GetNestedCanvas(HWND parent, const wchar_t* className);
-    std::string getComponentBounds(JNIEnv* env, jobject component);
     bool AttachToThread(JNIEnv** Thread);
     bool DetachThread(JNIEnv** Thread);
     jobject getClient();

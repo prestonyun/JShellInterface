@@ -434,6 +434,7 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
                     checkAndClearException(env);
                     const char* utf8Chars = env->GetStringUTFChars(message, NULL);
                     resultString += (std::string)utf8Chars;
+                    env->ReleaseStringUTFChars(message, utf8Chars);
                     break;
                 }
             }
@@ -441,6 +442,7 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
 
             const char* utf8Chars = env->GetStringUTFChars(valueString, NULL);
             resultString += (std::string)utf8Chars;
+            env->ReleaseStringUTFChars(valueString, utf8Chars);
         }
 
         return resultString;
@@ -449,47 +451,4 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
         DisplayErrorMessage(L"Failed to get shell");
         return result;
     }
-}
-
-std::string JavaAPI::getComponentBounds(JNIEnv* env, jobject component)
-{
-    // Get the component's class
-    jclass componentClass = env->GetObjectClass(component);
-
-    // Get the method IDs
-    jmethodID getPointLoc = env->GetMethodID(componentClass, "getLocationOnScreen", "()Ljava/awt/Point;");
-    jobject point = env->CallObjectMethod(component, getPointLoc);
-    jclass pointClass = env->GetObjectClass(point);
-    if (!getPointLoc || !point || !pointClass)
-    {
-        return "";
-    }
-    jmethodID getXMethod = env->GetMethodID(pointClass, "getX", "()I");
-    jmethodID getYMethod = env->GetMethodID(pointClass, "getY", "()I");
-    if (!getXMethod || !getYMethod)
-    {
-        getXMethod = env->GetMethodID(pointClass, "getX", "()D");
-        getYMethod = env->GetMethodID(pointClass, "getY", "()D");
-    }
-    jmethodID getWidth = env->GetMethodID(componentClass, "getWidth", "()I");
-    jmethodID getHeight = env->GetMethodID(componentClass, "getHeight", "()I");
-    if (!getXMethod || !getYMethod || !getWidth || !getHeight) return ""; // Error handling
-
-    // Call the methods
-    double x = env->CallDoubleMethod(point, getXMethod);
-    double y = env->CallDoubleMethod(point, getYMethod);
-    int w = env->CallIntMethod(component, getWidth);
-    int h = env->CallIntMethod(component, getHeight);
-    if (!x || !y || !w || !h) return "";
-
-    // Optionally, handle exceptions if the method calls throw any
-    if (env->ExceptionCheck())
-    {
-        env->ExceptionDescribe();  // prints exception description to stderr
-        env->ExceptionClear();
-        // handle the exception, e.g., by returning a default Rectangle or by other means
-    }
-    std::stringstream ss;
-    ss << x << " " << y << " " << w << " " << h;
-    return ss.str();
 }
