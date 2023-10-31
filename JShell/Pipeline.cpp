@@ -152,7 +152,7 @@ DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
     // Now, continue reading instructions from the client until the client disconnects or an error occurs
     while (pipeline->running) {
         Sleep(10);
-        if (pipeline->ReadFromPipeWithTimeout(buffer, bytesRead, 1000)) {
+        if (pipeline->ReadFromPipe(buffer, bytesRead)) {
             buffer[bytesRead] = '\0';
             std::string instruction(buffer.data());
             std::cout << "Received instruction: " << instruction << std::endl;
@@ -201,7 +201,8 @@ DWORD WINAPI Pipeline::RunServer(LPVOID lpParam) {
             if (hThread) {
                 // Wait for the client thread to finish. This ensures we handle one client at a time.
                 WaitForSingleObject(hThread, INFINITE);
-                CloseHandle(hThread);
+                pipeline->DisconnectAndClose();
+                pipeline->StartServer();
             }
         }
     }
