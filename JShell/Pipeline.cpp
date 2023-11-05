@@ -50,17 +50,36 @@ void Pipeline::StartServer() {
 
 bool Pipeline::ReadFromPipe(std::vector<char>& buffer, DWORD& bytesRead) {
     std::lock_guard<std::mutex> lock(mtx);
-    buffer.resize(bufferSize);
-    if (!::ReadFile(hPipe, buffer.data(), static_cast<DWORD>(buffer.size() - 1), &bytesRead, NULL)) {
-        DWORD error = GetLastError();
-        std::wcerr << L"Failed to read from pipe. Error Code: " << error << std::endl;
-        return false;
+    const std::string terminator = "<END>";
+    std::vector<char> tempBuffer(bufferSize, 0); // temporary buffer for each read
+    buffer.clear(); // clear the main buffer
+    bytesRead = 0;
+
+    while (true) {
+        DWORD tempBytesRead = 0;
+        if (!::ReadFile(hPipe, tempBuffer.data(), static_cast<DWORD>(tempBuffer.size() - 1), &tempBytesRead, NULL)) {
+            DWORD error = GetLastError();
+            std::wcerr << L"Failed to read from pipe. Error Code: " << error << std::endl;
+            return false;
+        }
+
+        tempBuffer[tempBytesRead] = '\0'; // safe null-termination
+        buffer.insert(buffer.end(), tempBuffer.begin(), tempBuffer.begin() + tempBytesRead);
+        bytesRead += tempBytesRead;
+
+        // Check if buffer contains the terminator
+        if (buffer.size() >= terminator.size() && std::string(buffer.end() - terminator.size(), buffer.end()) == terminator) {
+            return true;
+        }
+
+        // If we read less than the buffer size, it means there's no more data to read for now
+        if (tempBytesRead < tempBuffer.size() - 1) {
+            break;
+        }
     }
 
-    buffer[bytesRead] = '\0'; // safe null-termination
-    return true;
+    return false;
 }
-
 
 bool Pipeline::WriteResponse(const std::string& response) {
     std::lock_guard<std::mutex> lock(mtx);
@@ -83,42 +102,72 @@ void Pipeline::DisconnectAndClose() {
 }
 
 bool Pipeline::ReadFromPipeWithTimeout(std::vector<char>& buffer, DWORD& bytesRead, DWORD timeoutMillis) {
+    const std::string terminator = "<END>";
+
     std::lock_guard<std::mutex> lock(mtx);
-    buffer.resize(bufferSize);
+    buffer.clear();
 
     ULONGLONG startTime = GetTickCount64();
     ULONGLONG elapsedTime = 0;
+    bytesRead = 0;
 
     while (elapsedTime < timeoutMillis) {
         DWORD bytesAvailable = 0;
         if (!::PeekNamedPipe(hPipe, NULL, 0, NULL, &bytesAvailable, NULL)) {
             DWORD error = GetLastError();
             std::wcerr << L"Failed to peek named pipe. Error Code: " << error << std::endl;
-            Sleep(10);  // wait for a second before retrying
+            Sleep(10);  // wait for a short interval before retrying
+            elapsedTime = GetTickCount64() - startTime;
             continue;
         }
 
         if (bytesAvailable > 0) {
-            if (!::ReadFile(hPipe, buffer.data(), static_cast<DWORD>(buffer.size() - 1), &bytesRead, NULL)) {
+            std::vector<char> readBuffer(bytesAvailable + 1);
+            DWORD currentBytesRead = 0;
+            if (!::ReadFile(hPipe, readBuffer.data(), bytesAvailable, &currentBytesRead, NULL)) {
                 DWORD error = GetLastError();
                 std::wcerr << L"Failed to read from timeout pipe. Error Code: " << error << std::endl;
-                Sleep(10);  // wait for a second before retrying
+                Sleep(10);  // wait for a short interval before retrying
+                elapsedTime = GetTickCount64() - startTime;
                 continue;
             }
 
-            buffer[bytesRead] = '\0'; // safe null-termination
-            return true;
+            readBuffer[currentBytesRead] = '\0';  // safe null-termination
+            std::string currentChunk(readBuffer.begin(), readBuffer.begin() + currentBytesRead);
+
+            // Check for terminator in the latest read chunk
+            size_t terminatorPos = currentChunk.find(terminator);
+            if (terminatorPos != std::string::npos) {
+                // Append only up to the terminator
+                buffer.insert(buffer.end(), currentChunk.begin(), currentChunk.begin() + terminatorPos);
+                bytesRead += terminatorPos;
+
+                // Remove the terminator from the buffer
+                std::string strBuffer(buffer.begin(), buffer.end());
+                size_t pos = strBuffer.find(terminator);
+                if (pos != std::string::npos) {
+                    strBuffer.erase(pos, terminator.length());
+                }
+                buffer.assign(strBuffer.begin(), strBuffer.end());
+
+                return true;  // Successfully found the terminator
+            }
+            else {
+                // If no terminator is found, append the entire chunk to the buffer
+                buffer.insert(buffer.end(), currentChunk.begin(), currentChunk.end());
+                bytesRead += currentBytesRead;
+            }
         }
 
-        // If data isn't ready yet, wait for a short interval and check again
-        Sleep(10);
+        Sleep(10);  // wait for a short interval before checking again
         elapsedTime = GetTickCount64() - startTime;
     }
 
-    std::wcerr << L"Timeout: Failed to read from pipe within the specified timeout." << std::endl;
-    Sleep(10);  // wait for a second before retrying
+    std::wcerr << L"Timeout or terminator not found." << std::endl;
     return false;
 }
+
+
 
 
 DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
@@ -127,15 +176,18 @@ DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
     std::vector<char> buffer;
     DWORD bytesRead;
     int handshakeRetries = 3;
+    std::string instruction;
+    std::string handshakeMessage;
+    std::string response;
 
     while (handshakeRetries > 0) {
         if (pipeline->ReadFromPipeWithTimeout(buffer, bytesRead, 1000 /*timeout in ms*/)) {
-            buffer[bytesRead] = '\0';
-            std::string handshakeMessage(buffer.data());
+            handshakeMessage.assign(buffer.begin(), buffer.begin() + bytesRead);
             if (handshakeMessage == "READY") {
                 std::cout << "Received handshake request." << std::endl;
                 pipeline->WriteResponse("GO_AHEAD<END>");
                 std::cout << "Sent handshake acknowledgment." << std::endl;
+
                 break; // break out of handshake loop
             }
         }
@@ -144,7 +196,6 @@ DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
 
     if (handshakeRetries <= 0) {
         std::cerr << "Failed to establish handshake after 3 retries." << std::endl;
-        //DisconnectNamedPipe(pipeline->hPipe);
         pipeline->DisconnectAndClose();
         return 1; // Error code
     }
@@ -153,10 +204,9 @@ DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
     while (pipeline->running) {
         Sleep(10);
         if (pipeline->ReadFromPipe(buffer, bytesRead)) {
-            buffer[bytesRead] = '\0';
-            std::string instruction(buffer.data());
+            instruction.assign(buffer.begin(), buffer.begin() + bytesRead);
             std::cout << "Received instruction: " << instruction << std::endl;
-            std::string response = javaAPI.ProcessInstruction(instruction);
+            response = javaAPI.ProcessInstruction(instruction);
 
             response += "<END>";
 
@@ -166,12 +216,11 @@ DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
             Sleep(10);
         }
         else {
-            // Possibly handle errors or disconnections here.
             break;  // break out if reading from the pipe fails, which implies client has disconnected.
         }
     }
     pipeline->DisconnectAndClose();
-    //DisconnectNamedPipe(pipeline->hPipe);  // only disconnect once we're done with this client
+    pipeline->StartServer();
     return 0;
 }
 

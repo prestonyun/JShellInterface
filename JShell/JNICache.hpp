@@ -7,6 +7,14 @@
 
 class JniCache {
 public:
+    static JniCache& getInstance() {
+        static JniCache instance; // Guaranteed to be lazy initialized and destroyed correctly
+        return instance;
+    }
+
+    JniCache(const JniCache&) = delete; // Prevent copy
+    void operator=(const JniCache&) = delete; // Prevent assignment
+
     // Cache for method IDs, using className::methodName as the key.
     std::unordered_map<std::string, jmethodID> methodCache;
     // Cache for class objects, using className as the key.
@@ -77,12 +85,13 @@ public:
 		return fieldID;
 	}
 
-    // Constructor, can be used to preload some classes into the cache.
-    JniCache() = default;
-
     // Destructor for cleanup.
     ~JniCache() {
         // Handle the cleanup, if needed.
         // Remember to delete global references, if any.
     }
+
+private:
+    // Constructor, can be used to preload some classes into the cache.
+    JniCache() = default;
 };

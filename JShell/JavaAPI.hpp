@@ -26,11 +26,12 @@ public:
     HWND GetNestedCanvas(HWND parent, const wchar_t* className);
     bool AttachToThread(JNIEnv** Thread);
     bool DetachThread(JNIEnv** Thread);
+    void cleanup();
     jobject getClient();
     jobject getJShell();
 
     // Initialize cache in JavaAPI constructor
-    JniCache* cache;
+    JniCache& cache;
 
 private:
     JavaVM* jvm;
@@ -41,6 +42,7 @@ private:
     jobject client;
     jobject canvas;
     jobject shell;
+    jobject jshellpanel;
     jmethodID eval;
     HWND clientHWND;
 };

@@ -31,7 +31,7 @@ void checkAndClearException(JNIEnv* env) {
     }
 }
 
-JavaAPI::JavaAPI() {
+JavaAPI::JavaAPI() : cache(JniCache::getInstance()) {
     jvm = nullptr;
     env = nullptr;
 
@@ -43,7 +43,7 @@ JavaAPI::JavaAPI() {
     shell = nullptr;
     eval = nullptr;
     clientHWND = nullptr;
-    cache = new JniCache();
+    jshellpanel = nullptr;
 
     jsize nVMs;
     jint ret = JNI_GetCreatedJavaVMs(&jvm, 1, &nVMs);
@@ -186,8 +186,8 @@ jobject JavaAPI::getJShell() {
         return nullptr;
     }
 
-    jobject shellPanelInstance = env->GetStaticObjectField(shellPanelClass, instanceFieldID);
-    if (!shellPanelInstance) {
+    jshellpanel = env->GetStaticObjectField(shellPanelClass, instanceFieldID);
+    if (!jshellpanel) {
         DisplayErrorMessage(L"Failed to find ShellPanel class");
         return nullptr;
     }
@@ -196,16 +196,16 @@ jobject JavaAPI::getJShell() {
     {
         getClient();
     }
-    jmethodID switchContext = this->cache->getMethodID(env, "ShellPanelClass", shellPanelClass, "switchContext", "(Lcom/google/inject/Injector;)V");
+    jmethodID switchContext = cache.getMethodID(env, "ShellPanelClass", shellPanelClass, "switchContext", "(Lcom/google/inject/Injector;)V");
     if (!switchContext) {
         DisplayErrorMessage(L"Failed to find ShellPanel class");
         return nullptr;
     }
-    env->CallVoidMethod(shellPanelInstance, switchContext, this->injector);
+    env->CallVoidMethod(jshellpanel, switchContext, this->injector);
     checkAndClearException(env);
 
     // Get the JShell object
-    this->shell = env->GetObjectField(shellPanelInstance, shellFieldID);
+    this->shell = env->GetObjectField(jshellpanel, shellFieldID);
     checkAndClearException(env);
 
     jclass shellClass = env->GetObjectClass(shell);
@@ -237,7 +237,7 @@ jobject JavaAPI::getClient() {
         return nullptr; // or handle the error as appropriate
     }
     this->injector = injector;
-    jclass injectorClass = this->cache->getClass(env, "InjectorClass", injector);
+    jclass injectorClass = cache.getClass(env, "InjectorClass", injector);
     if (env->ExceptionCheck()) {
         MessageBoxW(NULL, L"Failed to find injector class", L"Error", MB_OK | MB_ICONERROR);
         env->ExceptionClear();
@@ -278,7 +278,7 @@ jobject JavaAPI::getClient() {
         return nullptr; // or handle the error as appropriate
     }
 
-    jclass clientClass = this->cache->getClass(env, "ClientClass", client);
+    jclass clientClass = cache.getClass(env, "ClientClass", client);
     if (env->ExceptionCheck()) {
         MessageBoxW(NULL, L"Failed to find client object class", L"Error", MB_OK | MB_ICONERROR);
         env->ExceptionClear();
@@ -374,6 +374,10 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
     if (!this->shell) {
         getJShell();
     }
+    if (instruction == "cleanup") {
+		cleanup();
+		return result;
+	}
     if (this->shell) {
         jstring jString = env->NewStringUTF(instruction.c_str());
         jobject snippetList = env->CallObjectMethod(shell, eval, jString);
@@ -382,13 +386,13 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
             return result;
         }
         checkAndClearException(env);
-        jclass listClass = this->cache->getClass(env, "SnippetList", snippetList);//env->GetObjectClass(snippetList);
+        jclass listClass = cache.getClass(env, "SnippetList", snippetList);//env->GetObjectClass(snippetList);
         if (listClass == nullptr) {
             DisplayErrorMessage(L"Failed to get list class");
             return result;
         }
         checkAndClearException(env);
-        jmethodID sizeMethod = this->cache->getMethodID(env, "SnippetList_size", listClass, "size", "()I");
+        jmethodID sizeMethod = cache.getMethodID(env, "SnippetList_size", listClass, "size", "()I");
         if (sizeMethod == nullptr) {
             DisplayErrorMessage(L"Failed to get size method");
             return result;
@@ -400,7 +404,7 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
             return result;
         }
         checkAndClearException(env);
-        jmethodID getMethod = this->cache->getMethodID(env, "SnippetList_get", listClass, "get", "(I)Ljava/lang/Object;");
+        jmethodID getMethod = cache.getMethodID(env, "SnippetList_get", listClass, "get", "(I)Ljava/lang/Object;");
         if (getMethod == nullptr) {
             DisplayErrorMessage(L"Failed to get get method");
             return result;
@@ -409,14 +413,15 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
         std::string resultString = "";
         for (jint i = 0; i < listSize; i++) {
             jobject snippet = env->CallObjectMethod(snippetList, getMethod, i);
-            jclass snippetClass = this->cache->getClass(env, "Snippet", snippet);
-            jmethodID valueMethod = this->cache->getMethodID(env, "ValueMethod", snippetClass, "value", "()Ljava/lang/String;");
+            jclass snippetClass = cache.getClass(env, "Snippet", snippet);
+            jmethodID valueMethod = cache.getMethodID(env, "ValueMethod", snippetClass, "value", "()Ljava/lang/String;");
+            //jmethodID dropMethod = cache.getMethodID(env, "SnippetDrop", snippetClass, "drop", "()V");
             jstring valueString = (jstring)env->CallObjectMethod(snippet, valueMethod);
             if (valueString == nullptr) {
-                jmethodID exception = this->cache->getMethodID(env, "SnippetException", snippetClass, "exception", "()Ljdk/jshell/JShellException;");
+                jmethodID exception = cache.getMethodID(env, "SnippetException", snippetClass, "exception", "()Ljdk/jshell/JShellException;");
                 jobject exceptionObject = env->CallObjectMethod(snippet, exception);
                 if (exceptionObject == nullptr) {
-                    jmethodID toString = this->cache->getMethodID(env, "SnippetToString", snippetClass, "toString", "()Ljava/lang/String;");
+                    jmethodID toString = cache.getMethodID(env, "SnippetToString", snippetClass, "toString", "()Ljava/lang/String;");
                     jstring toStringString = (jstring)env->CallObjectMethod(snippet, toString);
                     if (toStringString != nullptr) {
                         resultString += (std::string)env->GetStringUTFChars(toStringString, NULL);
@@ -424,8 +429,8 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
                     }
                 }
                 else {
-                    jclass exceptionClass = this->cache->getClass(env, "ExceptionClass", exceptionObject);
-                    jmethodID getMessage = this->cache->getMethodID(env, "ExceptionGetMethod", exceptionClass, "getMessage", "()Ljava/lang/String;");
+                    jclass exceptionClass = cache.getClass(env, "ExceptionClass", exceptionObject);
+                    jmethodID getMessage = cache.getMethodID(env, "ExceptionGetMethod", exceptionClass, "getMessage", "()Ljava/lang/String;");
 
                     jstring message = (jstring)env->CallObjectMethod(exceptionObject, getMessage);
                     if (message == nullptr) {
@@ -440,6 +445,8 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
             }
             checkAndClearException(env);
 
+            //env->CallVoidMethod(snippet, dropMethod);
+
             const char* utf8Chars = env->GetStringUTFChars(valueString, NULL);
             resultString += (std::string)utf8Chars;
             env->ReleaseStringUTFChars(valueString, utf8Chars);
@@ -451,4 +458,9 @@ std::string JavaAPI::ProcessInstruction(const std::string& instruction) {
         DisplayErrorMessage(L"Failed to get shell");
         return result;
     }
+
+}
+
+void JavaAPI::cleanup() {
+    getJShell();
 }

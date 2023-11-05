@@ -9,6 +9,7 @@ class Pipeline {
 public:
     Pipeline(const std::wstring& pipeName, size_t bufferSize);
     ~Pipeline();
+    bool running;
     void StartServer();
     static DWORD WINAPI RunServer(LPVOID lpParam);
     static DWORD WINAPI ClientThread(LPVOID lpParam);
@@ -23,5 +24,5 @@ private:
     size_t bufferSize;
     static JavaAPI javaAPI;
     std::mutex mtx; // Mutex for thread-safety
-    bool running;
+    
 };

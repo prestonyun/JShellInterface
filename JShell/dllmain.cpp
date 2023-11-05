@@ -18,11 +18,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         break;
 
     case DLL_PROCESS_DETACH:
-        // Handle any necessary cleanup
+        // Signal the server to stop
+        pipeline.running = false;
+
+        // Wait for the server thread to finish
         if (serverThread) {
-            // Maybe send a signal to end the server thread or wait for it to finish
-            // Wait for the thread to finish (if necessary):
-            // WaitForSingleObject(serverThread, INFINITE);
+            WaitForSingleObject(serverThread, INFINITE);
 
             // Close the handle:
             CloseHandle(serverThread);
@@ -32,3 +33,4 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
     return TRUE;
 }
+
