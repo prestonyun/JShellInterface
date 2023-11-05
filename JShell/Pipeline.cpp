@@ -69,6 +69,9 @@ bool Pipeline::ReadFromPipe(std::vector<char>& buffer, DWORD& bytesRead) {
 
         // Check if buffer contains the terminator
         if (buffer.size() >= terminator.size() && std::string(buffer.end() - terminator.size(), buffer.end()) == terminator) {
+            // Remove the terminator from the buffer
+            buffer.erase(buffer.end() - terminator.size(), buffer.end());
+            bytesRead -= static_cast<DWORD>(terminator.size());
             return true;
         }
 
@@ -80,6 +83,7 @@ bool Pipeline::ReadFromPipe(std::vector<char>& buffer, DWORD& bytesRead) {
 
     return false;
 }
+
 
 bool Pipeline::WriteResponse(const std::string& response) {
     std::lock_guard<std::mutex> lock(mtx);
@@ -166,8 +170,6 @@ bool Pipeline::ReadFromPipeWithTimeout(std::vector<char>& buffer, DWORD& bytesRe
     std::wcerr << L"Timeout or terminator not found." << std::endl;
     return false;
 }
-
-
 
 
 DWORD WINAPI Pipeline::ClientThread(LPVOID lpParam) {
